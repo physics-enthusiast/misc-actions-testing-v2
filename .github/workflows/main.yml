@@ -42,6 +42,12 @@ jobs:
       - if: ${{ ! matrix.builder }}
         run: |
           import requests
+          import time
+          time.sleep(20)
           response=requests.get("https://api.github.com/repos/physics-enthusiast/misc-actions-testing-v2/actions/artifacts", headers={"Accept":"application/vnd.github+json", "X-GitHub-Api-Version":"2022-11-28"}).json()["artifacts"]
-          print(response)
+          current_artifacts=[]
+          for artifact in response:
+              if artifact["workflow_run"]["id"] == ${{ github.run_id }}:
+                  current_artifacts.append(artifact)
+          print(current_artifacts)
         shell: python
