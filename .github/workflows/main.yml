@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        number: ${{ needs.gen_indices.outputs.indices }}
+        number: ${{ fromJSON(needs.gen_indices.outputs.indices) }}
         include:
           - builder: true
           - number: 0
