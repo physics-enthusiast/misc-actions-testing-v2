@@ -20,7 +20,7 @@ jobs:
           import os
           indices = str(list(range(4)))
           with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-              print(f'indices={indices}', file=fh)
+              print('indices='+indices, file=fh)
         shell: python
   test:
     runs-on: ubuntu-latest
