@@ -1,0 +1,36 @@
+name: Test
+on:
+  push:
+  workflow_dispatch:
+concurrency:
+  group: test
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        number: [0, 1, 2, 3]
+        include:
+          - builder: true
+          - number: 0
+            builder: false
+
+    name: ${{ matrix.number }} 
+    steps:
+      - name: Write file
+        uses: "DamianReeves/write-file-action@master"
+        if: matrix.builder
+        with:
+          path: data-${{ matrix.number }}.txt
+          write-mode: overwrite
+          contents: |
+            test
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        if: matrix.builder
+        with:
+          name: data-${{ matrix.number }}
+          path: data-${{ matrix.number }}.txt
