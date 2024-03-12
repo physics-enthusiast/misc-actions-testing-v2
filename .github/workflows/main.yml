@@ -10,29 +10,35 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  test:
+  test1:
+    runs-on: ubuntu-latest
+    steps:
+      - id: get_indices
+        run: |
+          import os
+          indices = str(list(range(4)))
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+              print(f'indices={indices}', file=fh)
+        shell: python
+  test2:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        number: [0, 1, 2, 3]
+        number: ${{ steps.get_indices.outputs.indices }}
         include:
           - builder: true
           - number: 0
             builder: false
-
     name: ${{ matrix.number }} 
     steps:
-      - name: Write file
-        uses: "DamianReeves/write-file-action@master"
+      - uses: "DamianReeves/write-file-action@master"
         if: matrix.builder
         with:
           path: data-${{ matrix.number }}.txt
           write-mode: overwrite
           contents: |
             test
-      - if: matrix.builder
-        run: sleep 10
       - name: Upload
         uses: actions/upload-artifact@v4
         if: matrix.builder
@@ -50,5 +56,6 @@ jobs:
                   time.sleep(10)
                   response=requests.get("https://api.github.com/repos/physics-enthusiast/misc-actions-testing-v2/actions/artifacts", headers={"Accept":"application/vnd.github+json", "X-GitHub-Api-Version":"2022-11-28"}, params={"name":"data-"+str(n)+"-${{ github.run_id }}-${{ github.run_attempt }}"}).json()
               return response["artifacts"][0]
-          print(fetch_nth(1))
+          for n in str("${{ steps.get_indices.outputs.indices }}"):
+              print(fetch_nth(n))
         shell: python
