@@ -37,14 +37,10 @@ jobs:
         uses: actions/upload-artifact@v4
         if: matrix.builder
         with:
-          name: data-${{ matrix.number }}
+          name: data-${{ matrix.number }}-${{ github.run_attempt }}
           path: data-${{ matrix.number }}.txt
       - if: ${{ ! matrix.builder }}
         run: |
-          gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/physics-enthusiast/misc-actions-testing-v2/actions/artifacts
-          sleep 5
-          echo -e "\n"
-          gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/physics-enthusiast/misc-actions-testing-v2/actions/artifacts
-          sleep 5
-          echo -e "\n"
-          gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/physics-enthusiast/misc-actions-testing-v2/actions/artifacts
+          import requests
+          response=requests.get("https://api.github.com/repos/physics-enthusiast/misc-actions-testing-v2/actions/artifacts", headers={"Accept":"application/vnd.github+json", "X-GitHub-Api-Version":"2022-11-28"})
+          print(response)
