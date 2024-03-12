@@ -42,6 +42,7 @@ jobs:
       - if: ${{ ! matrix.builder }}
         run: |
           import requests
-          response=requests.get("https://api.github.com/repos/physics-enthusiast/misc-actions-testing-v2/actions/artifacts", headers={"Accept":"application/vnd.github+json", "X-GitHub-Api-Version":"2022-11-28"})
+          import json
+          response=json.loads(requests.get("https://api.github.com/repos/physics-enthusiast/misc-actions-testing-v2/actions/artifacts", headers={"Accept":"application/vnd.github+json", "X-GitHub-Api-Version":"2022-11-28"}).json())
           print(response)
         shell: python
