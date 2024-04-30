@@ -10,56 +10,9 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  gen_indices:
-    runs-on: ubuntu-latest
-    outputs:
-      indices: ${{ steps.get_indices.outputs.indices }}
-    steps:
-      - id: get_indices
-        run: |
-          import os
-          indices = str(list(range(4)))
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-              print('indices='+indices, file=fh)
-        shell: python
   test:
     runs-on: ubuntu-latest
-    needs: gen_indices
-    strategy:
-      fail-fast: false
-      matrix:
-        number: ${{ fromJSON(needs.gen_indices.outputs.indices) }}
-        include:
-          - builder: true
-          - number: 0
-            builder: false
-    name: ${{ matrix.number }} 
     steps:
-      - uses: "DamianReeves/write-file-action@master"
-        if: matrix.builder
-        with:
-          path: data-${{ matrix.number }}.txt
-          write-mode: overwrite
-          contents: |
-            test
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        if: matrix.builder
-        with:
-          name: data-${{ matrix.number }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: data-${{ matrix.number }}.txt
-      - if: ${{ ! matrix.builder }}
-        run: |
-          import requests
-          import time
-          import json
-          def fetch_nth(n):
-              response=requests.get("https://api.github.com/repos/physics-enthusiast/misc-actions-testing-v2/actions/artifacts", headers={"Accept":"application/vnd.github+json", "X-GitHub-Api-Version":"2022-11-28"}, params={"name":"data-"+str(n)+"-${{ github.run_id }}-${{ github.run_attempt }}"}).json()
-              print(response)
-              while response["total_count"] == 0:
-                  time.sleep(10)
-                  response=requests.get("https://api.github.com/repos/physics-enthusiast/misc-actions-testing-v2/actions/artifacts", headers={"Accept":"application/vnd.github+json", "X-GitHub-Api-Version":"2022-11-28"}, params={"name":"data-"+str(n)+"-${{ github.run_id }}-${{ github.run_attempt }}"}).json()
-              return response["artifacts"][0]
-          for n in json.loads("${{ needs.gen_indices.outputs.indices }}")[1:]:
-              print(fetch_nth(n))
-        shell: python
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+      - run: nix --experimental-features 'nix-command flakes' flake check -L github:physics-enthusiast/nix/airgappable-nix
